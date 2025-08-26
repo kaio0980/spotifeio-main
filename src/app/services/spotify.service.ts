@@ -10,18 +10,17 @@ export class SpotifyService {
 
   async obterUrlLogin(): Promise<string> {
 
-    const codigoAleatorio = await this.gerarCodigoAleatorio();
+  const codigoAleatorio = await this.gerarCodigoAleatorio();
 
-    const authPoint = `${SpotifyConfiguration.authEndpoint}?`;
-    const clientId = `client_id=${SpotifyConfiguration.clientId}&`;
-    const urlRedirect = `redirect_uri=${SpotifyConfiguration.redirectUrl}&`;
-    const scopes = `scope=${SpotifyConfiguration.scopes.join('%20')}&`;
-    const codeChallengeMethod = 'code_challenge_method=S256&';
-    const codeChallengeParam = 'code_challenge' + codigoAleatorio + '&';
-    const responseType = 'response_type=code';
+  const authPoint = `${SpotifyConfiguration.authEndpoint}?`;
+  const clientId = `client_id=${SpotifyConfiguration.clientId}&`;
+  const urlRedirect = `redirect_uri=${SpotifyConfiguration.redirectUrl}&`;
+  const scopes = `scope=${SpotifyConfiguration.scopes.join('%20')}&`;
+  const codeChallengeMethod = 'code_challenge_method=S256&';
+  const codeChallengeParam = `code_challenge=${codigoAleatorio}&`;
+  const responseType = 'response_type=code';
 
-    return `${authPoint}${clientId}${urlRedirect}${scopes}
-      ${codeChallengeMethod}${codeChallengeParam}${responseType}`;
+  return `${authPoint}${clientId}${urlRedirect}${scopes}${codeChallengeMethod}${codeChallengeParam}${responseType}`;
   }
 
   async gerarCodigoAleatorio() {
@@ -52,7 +51,7 @@ export class SpotifyService {
     .replace(/=+$/, '');
   }
 
-  definirAcesstoken(code: string) {
+  async definirAcesstoken(code: string) {
     const codigoVerificador = localStorage.getItem('code_verifier');
     const tokenEndpont = SpotifyConfiguration.apiTokenEndpoint;
 
@@ -63,18 +62,18 @@ export class SpotifyService {
     params.append("redirect_uri", SpotifyConfiguration.redirectUrl);
     params.append("code_verifier", codigoVerificador!);
 
-    try{
-   const response : response = await fetch(tokenEndpont, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params
-      })
+    try {
+      const response: Response = await fetch(tokenEndpont, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params
+      });
 
       const data = await response.json();
-
-    } 
-  } catch (error) {
-    console.error("Erro ao obter token de acesso:", error);
-    return false;
+      return data;
+    } catch (error) {
+      console.error("Erro ao obter token de acesso:", error);
+      return false;
+    }
   }
 }
