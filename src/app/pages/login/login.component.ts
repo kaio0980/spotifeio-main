@@ -1,20 +1,39 @@
-import {ChangeDetectionStrategy, Component, inject} from "@angular/core";
-import {SpotifyService} from "../../services/spotify.service";
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
+import { SpotifyService } from '../../services/spotify.service';
 
 @Component({
   selector: 'app-login',
   imports: [],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+  ngOnInit(): void {
+    this.verficarCodigoUrlCallback();
+  }
 
   serviceSpotify = inject(SpotifyService);
   anoAtual = new Date().getFullYear();
 
   async fazerLogin() {
     const url = await this.serviceSpotify.obterUrlLogin();
-    console.log(url);
+    window.location.href = url;
+  }
+
+  verficarCodigoUrlCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const codigo = params.get('code');
+
+    if (codigo) {
+      this.serviceSpotify.definirAcesstoken(codigo).then((sucesso: boolean) => {
+        // handle sucesso here if needed
+      });
+    }
   }
 }
